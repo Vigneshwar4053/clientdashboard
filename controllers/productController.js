@@ -1,35 +1,71 @@
-const Product = require('../models/Product');
+import Product from '../models/productModel.js';
 
-// Add product
-exports.addProduct = async (req, res) => {
+// CREATE
+export const addProduct = async (req, res) => {
   try {
-    const { name, description, price, stock } = req.body;
-    const imageUrl = req.file ? req.file.filename : null;
-
-    const product = new Product({ name, description, price, stock, imageUrl });
-    await product.save();
-    res.status(201).json({ message: 'Product added', product });
+    const product = new Product(req.body);
+    const savedProduct = await product.save();
+    res.status(201).json(savedProduct);
   } catch (err) {
+    console.error('Error adding product:', err);
     res.status(500).json({ error: 'Failed to add product' });
   }
 };
 
-// Get all products
-exports.getAllProducts = async (req, res) => {
+// READ
+export const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
-    res.json(products);
+    const products = await Product.find();
+    res.status(200).json(products);
   } catch (err) {
+    console.error('Error fetching products:', err);
     res.status(500).json({ error: 'Failed to fetch products' });
   }
 };
 
-// Get low stock products
-exports.getLowStockProducts = async (req, res) => {
+// UPDATE
+export const updateProduct = async (req, res) => {
   try {
-    const lowStock = await Product.find({ stock: { $lt: 5 } });
-    res.json(lowStock);
+    const { id } = req.params;
+    const { quantity, ...otherUpdates } = req.body;
+
+    // Find the product first
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // If quantity is provided, add to existing
+    if (typeof quantity === 'number') {
+      product.quantity += quantity;
+    }
+
+    // Update other fields if any
+    Object.assign(product, otherUpdates);
+
+    const updatedProduct = await product.save();
+
+    res.status(200).json(updatedProduct);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch low stock' });
+    console.error("Error updating product:", err);
+    res.status(500).json({ error: 'Failed to update product' });
+  }
+};
+//delete
+export const deleteProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedProduct = await Product.findByIdAndDelete(id);
+
+    if (!deletedProduct) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    res.status(200).json({ message: 'Product deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting product:', err);
+    res.status(500).json({ error: 'Failed to delete product' });
   }
 };

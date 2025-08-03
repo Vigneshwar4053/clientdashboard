@@ -1,33 +1,27 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const path = require('path');
-const dotenv = require('dotenv');
-const productRoutes = require('./routes/productRoutes');
+import express from 'express';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import connectDB from './config/db.js';
+import productRoutes from './routes/productRoutes.js';
 
 dotenv.config();
+connectDB();
 
 const app = express();
-app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded images
-app.use('/uploads', express.static('uploads'));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB Connected'))
-  .catch(err => console.error('❌ Mongo Error:', err));
+// Serve static test UI
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.use('/api/products', productRoutes);
 
-// Basic HTML form test
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Start Server
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

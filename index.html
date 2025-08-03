@@ -1,21 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Add Product</title>
+  <title>Product Dashboard</title>
 </head>
 <body>
-  <h2>Add Product</h2>
-  <form action="http://localhost:5000/api/products/add" method="POST" enctype="multipart/form-data">
-    <input type="text" name="name" placeholder="Product Name" required><br><br>
-    <textarea name="description" placeholder="Description"></textarea><br><br>
-    <input type="number" name="price" placeholder="Price" required><br><br>
-    <input type="number" name="stock" placeholder="Stock" required><br><br>
-    <input type="file" name="image"><br><br>
+  <h1>Product Dashboard</h1>
+  <form id="productForm">
+    <input name="name" placeholder="Name" required />
+    <input name="description" placeholder="Description" />
+    <input name="quantity" placeholder="Quantity" type="number" />
+    <input name="price" placeholder="Price" type="number" required />
+    <input name="image" placeholder="Image URL" />
+    <input name="offerLabel" placeholder="Offer Label" />
+    <input name="discountPrice" placeholder="Discount Price" type="number" />
     <button type="submit">Add Product</button>
   </form>
 
-  <br><hr><br>
-  <a href="http://localhost:5000/api/products" target="_blank">View All Products (JSON)</a><br>
-  <a href="http://localhost:5000/api/products/low-stock" target="_blank">View Low Stock Products</a>
+  <script>
+    const form = document.getElementById('productForm');
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData);
+      await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      alert('Product added');
+      form.reset();
+    };
+  </script>
 </body>
 </html>
